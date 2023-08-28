@@ -46,7 +46,7 @@ def generate_random_timeserie_instance():
     series_1_parent_id_str: str = "parent_id_" + str(uuid4())
     description_str: str = "description_" + str(uuid4())
 
-    version_str: str = "Version_0_0_1"
+    version_str: str = "Version_" + str(uuid4())
 
     timestamp_start_int: int = int(timeseries_utils.get_utc_timestamp())
     timestamp_end_int: int = timestamp_start_int
@@ -82,8 +82,6 @@ def generate_random_timeserie_instance():
         properties_dict,
     )
 
-    # logger.debug(metadata_instance)
-    # print(metadata_instance)
     return metadata_instance
 
 
