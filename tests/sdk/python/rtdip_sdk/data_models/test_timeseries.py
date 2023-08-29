@@ -57,7 +57,7 @@ def test_generate_timeseries_objects_creation():
     value_str: str = "value_" + str(uuid4())
     properties_dict[key_str] = value_str
 
-    metadata_vo: MetaData = CreateTimeSeriesObject.create_timeseries_VO(
+    metadata_vo: MetaData = CreateTimeSeriesObject.create_timeseries_vo(
         meter_1_uid_str,
         series_1_id_str,
         series_1_parent_id_str,
