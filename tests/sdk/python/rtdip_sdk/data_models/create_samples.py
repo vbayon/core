@@ -45,6 +45,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+
 def generate_timeseries_instance(series_id: str, series_parent_id: str, timezone: str):
     #
     meter_uid: str = str(uuid4())
@@ -161,16 +162,15 @@ if __name__ == "__main__":
             jsonable_encoder(timeseries_metadata_instance), index=[0]
         )
         timeseries_metadata_list.append(timeseries_metadata_instance_df)
-        logger.debug(timeseries_metadata_instance_df)
         usage_df = pd.concat(usage_list)
         usage_df = pd.concat(usage_list)
         usage_df.to_csv(
-            os.path.join(database_path, table_name_usage + ".csv"),
-            index=False)
+            os.path.join(database_path, table_name_usage + ".csv"), index=False
+        )
         timeseries_metadata_df = pd.concat(timeseries_metadata_list)
         timeseries_metadata_df.to_csv(
-            os.path.join(database_path, table_name_metadata + ".csv"),
-            index=False)
+            os.path.join(database_path, table_name_metadata + ".csv"), index=False
+        )
 
     elif scenario == scenarios[1]:
         # Scenario 2. MULTIPLE_TIMEZONE
@@ -179,13 +179,16 @@ if __name__ == "__main__":
         timezones: list = pytz.all_timezones
         timezone_1: str = random.choice(timezones)
         timezone_2: str = random.choice(timezones)
-        logger.debug("TimeZone 1: %s", timezone_1)
-        logger.debug("TimeZone 2: %s", timezone_2)
         today_date: str = datetime.datetime.now().strftime("%m/%d/%Y")
-        timezone_1_series_id: str = f"{today_date}.{ValueType.Forecast}.{SeriesType.Hour}.{ModelType.AMI_USAGE}.{timezone_1}"
-        timezone_2_series_id: str = f"{today_date}.{ValueType.Forecast}.{SeriesType.Hour}.{ModelType.AMI_USAGE}.{timezone_2}"
 
-        series_parent_id: str = "parent_id_" + str(uuid4())
+        series_parent_id: str = (
+            f"{today_date}.{ValueType.Forecast}.{SeriesType.Hour}.{ModelType.AMI_USAGE}"
+        )
+
+        timezone_1_series_id: str = f"{series_parent_id}.{timezone_1}"
+        timezone_2_series_id: str = f"{series_parent_id}.{timezone_2}"
+
+
         timezone_1_timeseries_metadata_instance = generate_timeseries_instance(
             timezone_1_series_id, series_parent_id, timezone_1
         )
@@ -205,7 +208,7 @@ if __name__ == "__main__":
                 usage_instance = generate_usage_instance(
                     str(uuid4()),
                     timeseries_metadata_instance.SeriesId,
-                    usage_timestamp,     
+                    usage_timestamp,
                     usage_timestamp,
                     usage_value,
                 )
@@ -216,7 +219,6 @@ if __name__ == "__main__":
             )
 
             timeseries_metadata_list.append(timeseries_metadata_instance_df)
-            logger.debug(timeseries_metadata_instance_df)
         usage_df = pd.concat(usage_list)
         usage_df.to_csv(
             os.path.join(database_path, table_name_usage + ".csv"),
