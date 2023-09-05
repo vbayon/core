@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--output_dir", required=True, help="/tmp/")
 
-    scenarios: list = ["SINGLE_TIMEZONE", "MULTIPLE_TIMEZONE"]
+    scenarios: list = ["SINGLE_TIMEZONE", "MULTIPLE_TIMEZONE", "USAGE_AND_ATTRIBUTES_TABLES"]
     parser.add_argument("--scenario", required=True, help=f"{str(scenarios)}")
 
     args = parser.parse_args()
@@ -229,3 +229,82 @@ if __name__ == "__main__":
             os.path.join(database_path, table_name_metadata + ".csv"),
             index=False,
         )
+    elif scenario == scenarios[2]:
+        # Scenario 3. USAGE_AND_ATTRIBUTES_TABLES
+        
+        # Read .CSV files
+        # Usage
+
+        test_data_smart_meters_london_dir: list = [
+    os.path.join("meters","utils", "test_data", "smart_meters_london")
+]
+
+
+def get_test_data_directory(path_list: list) -> str:
+    current_dir: str = os.path.dirname(os.path.realpath(__file__))
+    logger.debug("Current Dir: {}".format(current_dir))
+    os.chdir(current_dir)
+    dir_full_path_str: str = os.path.join(current_dir, *path_list)
+    logger.debug("Checking if dir exist: {}".format(dir_full_path_str))
+    if os.path.exists(dir_full_path_str):
+        logger.debug("\tDir exist: %s", dir_full_path_str)
+        return dir_full_path_str
+    else:
+        logger.error("\tDir does not exist: %s", dir_full_path_str)
+    return None
+        #
+
+        usage_list: list = []
+        timeseries_metadata_list: list = []
+        timezones: list = pytz.all_timezones
+        timezone_1: str = random.choice(timezones)
+        timezone_2: str = random.choice(timezones)
+        today_date: str = datetime.datetime.now().strftime("%m/%d/%Y")
+
+        series_parent_id: str = (
+            f"{today_date}.{ValueType.Forecast}.{SeriesType.Hour}.{ModelType.AMI_USAGE}"
+        )
+
+        timezone_1_series_id: str = f"{series_parent_id}.{timezone_1}"
+        timezone_2_series_id: str = f"{series_parent_id}.{timezone_2}"
+
+
+        timezone_1_timeseries_metadata_instance = generate_timeseries_instance(
+            timezone_1_series_id, series_parent_id, timezone_1
+        )
+        timezone_2_timeseries_metadata_instance = generate_timeseries_instance(
+            timezone_2_series_id, series_parent_id, timezone_2
+        )
+
+        for timeseries_metadata_instance in [
+            timezone_1_timeseries_metadata_instance,
+            timezone_2_timeseries_metadata_instance,
+        ]:
+            for i in range(number_of_samples):
+                usage_timestamp: int = timeseries_metadata_instance.TimestampStart
+                usage_value: float = (
+                    timeseries_utils.generate_random_int_number(0, 1000) * 0.1
+                )
+                usage_instance = generate_usage_instance(
+                    str(uuid4()),
+                    timeseries_metadata_instance.SeriesId,
+                    usage_timestamp,
+                    usage_timestamp,
+                    usage_value,
+                )
+                usage_df = pd.DataFrame(jsonable_encoder(usage_instance), index=[0])
+                usage_list.append(usage_df)
+            timeseries_metadata_instance_df = pd.DataFrame(
+                jsonable_encoder(timeseries_metadata_instance), index=[0]
+            )
+
+            timeseries_metadata_list.append(timeseries_metadata_instance_df)
+        usage_df = pd.concat(usage_list)
+        usage_df.to_csv(
+            os.path.join(database_path, table_name_usage + ".csv"),
+            index=False,
+        )
+        timeseries_metadata_df = pd.concat(timeseries_metadata_list)
+        timeseries_metadata_df.to_csv(
+            os.path.join(database_path, table_name_metadata + ".csv"),
+            index=False,
